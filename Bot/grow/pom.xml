@@ -71,7 +71,7 @@
             <groupId>com.github.ngeor</groupId>
             <artifactId>checkstyle-rules</artifactId>
             <version>${checkstyle-rules.version}</version>
-          </dependency>  
+          </dependency>
         </dependencies>
         <configuration>
           <configLocation>com/github/ngeor/checkstyle.xml</configLocation>
@@ -159,7 +159,14 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin><plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <configuration>
+        <source>15</source>
+        <target>15</target>
+      </configuration>
+    </plugin>
     </plugins>
   </build>
   <reporting>
