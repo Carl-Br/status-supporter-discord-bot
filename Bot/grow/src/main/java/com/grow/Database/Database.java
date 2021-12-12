@@ -76,7 +76,8 @@ public class Database {
     }
 
 
-    /**Deletes every Dataset in the table, which is older than 48 hours except for the newest one ( which is older than 48 hours)*/
+    /**Deletes every Dataset in the table, which is older than 48 hours
+     * except for the newest one ( which is older than 48 hours)*/
     public static void clearServerTable(){
 
       ResultSet rs;
