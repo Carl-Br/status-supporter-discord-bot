@@ -2,6 +2,7 @@ package com.grow.bot.commands.server;
 
 import com.grow.Database.Database;
 import com.grow.bot.commands.SlashCommand;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.self.SelfUpdateVerifiedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -20,6 +21,11 @@ public class SetSupportStatus extends SlashCommand {
 
     @Override
     public void run(SlashCommandEvent event) {
+        //check permission
+        if(!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_SERVER)){
+            event.reply("you don't have the permission to manage the server").setEphemeral(true).queue();
+            return;
+        }
         String status = Objects.requireNonNull(event.getOption("status")).getAsString();
         long guildId = Objects.requireNonNull(event.getGuild()).getIdLong();
         if(status.length()>128){
@@ -27,11 +33,11 @@ public class SetSupportStatus extends SlashCommand {
             return;
         }
         //set the new status to the Database
-        event.deferReply().setEphemeral(true).queue(); // Tell discord we received the command, send a thinking... message to the user
+        event.deferReply().queue(); // Tell discord we received the command, send a thinking... message to the user
         Database.addSupportStatus(guildId,status);
         if(Database.getStatusList(guildId).size()>1){
             event.getHook().sendMessage("The supporter status has successfully been change to :\n\n "+status+" \n\nThe members now have 48 hours to" +
-                "change their status. Otherwise they will lose their status supporter roles.").queue();
+                " change their status. Otherwise they will lose their status supporter roles.").queue();
         }else{
             event.getHook().sendMessage("The status has successfully been change to :\n\n "+status).queue();
         }
