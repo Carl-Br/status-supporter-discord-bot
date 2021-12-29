@@ -2,13 +2,14 @@ package com.grow.bot.commands.server;
 
 import com.grow.Database.Database;
 import com.grow.Database.Status;
-import com.grow.bot.Bot;
 import com.grow.bot.commands.SlashCommand;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.self.SelfUpdateVerifiedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 
@@ -25,37 +26,30 @@ public class SetSupportStatus extends SlashCommand {
         //event.getGuild().getOwnerId();
         //check permission
         if(!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_SERVER)){
-            event.replyEmbeds(Bot.getReplyEmbed("error",
-                "You don't have the permission to manage the server.").build()).setEphemeral(true).queue();
+            event.reply("you don't have the permission to manage the server").setEphemeral(true).queue();
             return;
         }
         String status = Objects.requireNonNull(event.getOption("status")).getAsString();
         long guildId = Objects.requireNonNull(event.getGuild()).getIdLong();
         if(status.length()>128){
-            event.replyEmbeds(Bot.getReplyEmbed("error",
-                "The status can't be longer than 128 characters!").build()).setEphemeral(true).queue();
+            event.reply("The status can't be longer than 128 characters!").setEphemeral(true).queue();
             return;
         }
         //set the new status to the Database
-        Status s = Database.getLatestStatus();
+        event.deferReply().queue(); // Tell discord we received the command, send a thinking... message to the user
+        Status s = Database.getLatestStatus(guildId);
         if(s!=null){
             if(s.supporterStatus.equals(status)){
-                event.replyEmbeds(Bot.getReplyEmbed("error",
-                    "This is already the server status.").build()).setEphemeral(true).queue();
+                event.getHook().sendMessage("This is already the server status.").queue();
                 return;
             }
         }
-        Database.addSupportStatus(status);
-        if(Database.getStatusList().size()>1){
-            event.replyEmbeds(Bot.getReplyEmbed("success",
-                "The supporter status has successfully been change to: "+status+"" +
-                    "\nThe members now have 48 hours to  change their status. Otherwise they will lose their status supporter roles. Make sure to tell them!")
-                .build()).setEphemeral(true).queue();
-
+        Database.addSupportStatus(guildId,status);
+        if(Database.getStatusList(guildId).size()>1){
+            event.getHook().sendMessage("The supporter status has successfully been change to: "+status+" \nThe members now have 48 hours to" +
+                " change their status. Otherwise they will lose their status supporter roles.").queue();
         }else{
-            event.replyEmbeds(Bot.getReplyEmbed("success",
-                "The status has successfully been change to: "+status+".").build()).setEphemeral(true).queue();
-            return;
+            event.getHook().sendMessage("The status has successfully been change to: "+status).queue();
         }
 
     }

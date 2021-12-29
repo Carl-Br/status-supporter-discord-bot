@@ -24,9 +24,10 @@ public class Database {
           statement = connection.createStatement();
           System.out.println("connected to database");
 
-          statement.executeUpdate("CREATE TABLE IF NOT EXISTS users (userId INTEGER PRIMARY KEY,timeAdded TEXT);");
-          statement.executeUpdate("CREATE TABLE IF NOT EXISTS roles (roleId INTEGER PRIMARY KEY , days INTEGER);");
-          statement.executeUpdate("CREATE TABLE IF NOT EXISTS supportStatus (id INTEGER PRIMARY KEY AUTOINCREMENT, supportStatus TEXT, timeAdded TEXT);");
+          statement.executeUpdate("CREATE TABLE IF NOT EXISTS users (userId INTEGER PRIMARY KEY, guildId INTEGER,timeAdded TEXT);");
+          statement.executeUpdate("CREATE TABLE IF NOT EXISTS roles (id INTEGER PRIMARY KEY AUTOINCREMENT, guildId INTEGER, roleId INTEGER, days INTEGER);");
+          statement.executeUpdate("CREATE TABLE IF NOT EXISTS supportStatus (id INTEGER PRIMARY KEY AUTOINCREMENT, guildId  INTEGER, supportStatus TEXT, timeAdded TEXT);");
+          statement.executeUpdate("CREATE TABLE IF NOT EXISTS servers (guildId  INTEGER PRIMARY KEY, ownerId INTEGER);");
         }
         catch(SQLException e)
         {
@@ -62,15 +63,15 @@ public class Database {
         rs = statement.executeQuery("select * from users");
 
         while(rs.next()){
-            userList.add(new User(rs.getLong("userId"),simpleDateFormat.parse(rs.getString("timeAdded"))));
+            userList.add(new User(rs.getLong("userId"),rs.getLong("guildId"),simpleDateFormat.parse(rs.getString("timeAdded"))));
             System.out.println(rs.getLong("userId")+"    Database.java line 67, getAllUsers()");
         }
         return userList;
     }
-    public static void addOrUpdateUser(long userId) throws SQLException{
+    public static void addOrUpdateUser(long userId, long guildId) throws SQLException{
         String currentDate = simpleDateFormat.format(new Date());
       try {
-        statement.executeUpdate("INSERT OR REPLACE INTO users (userId,timeAdded) VALUES(%s,'%s');".formatted(userId,currentDate));
+        statement.executeUpdate("INSERT OR REPLACE INTO users (userId,guildId,timeAdded) VALUES(%s,%s,'%s');".formatted(userId,guildId,currentDate));
       } catch (SQLException e) {
         e.printStackTrace();
         throw e;
@@ -96,10 +97,10 @@ public class Database {
         }
     }
 
-    public static int getStatusSupporterCount() throws SQLException {
+    public static int getStatusSupporterCount(long guildId) throws SQLException {
         ResultSet rs;
         try {
-            rs = statement.executeQuery("select * from users");
+            rs = statement.executeQuery("select * from users WHERE guildId = %s".formatted(guildId));
             int count = 0;
             while(rs.next())
             {
@@ -112,13 +113,25 @@ public class Database {
         }
     }
     /** Return null if there is no user in the database with such an userId*/
+    public static long getGuildIdFromUser(long userId) throws SQLException {
+        ResultSet rs;
+        try {
+            rs = statement.executeQuery("select * from users where userId = %s;".formatted(userId));
+            return  rs.getLong("guildId");
+
+        } catch (SQLException  e) {
+            //TODO: handle exception
+            e.printStackTrace();
+            throw e;
+        }
+    }
 
     //STATUS
 
-    public static void addSupportStatus(String supportStatus)throws SQLException{
+    public static void addSupportStatus(long guildId, String supportStatus)throws SQLException{
       String currentDate = simpleDateFormat.format(new Date());
       try {
-        statement.executeUpdate("INSERT  INTO supportStatus (supportStatus,timeAdded) VALUES('%s','%s');".formatted(supportStatus,currentDate));
+        statement.executeUpdate("INSERT  INTO supportStatus (guildId,supportStatus,timeAdded) VALUES(%s,'%s','%s');".formatted(guildId,supportStatus,currentDate));
       } catch (SQLException e) {
         e.printStackTrace();
         throw e;
@@ -148,7 +161,7 @@ public class Database {
             clearedGuilds.add(guildId);
 
             //get a list with every status dataset from this server
-            List<Status> statusList = getStatusList();
+            List<Status> statusList = getStatusList(guildId);
 
             //remove every dateset from the last 48 hours
             for (int i = 0; i<statusList.size();i++) {
@@ -206,18 +219,18 @@ public class Database {
 
     }
 
-    public static List<Status> getStatusList()throws SQLException , ParseException{
+    public static List<Status> getStatusList(long guildId)throws SQLException , ParseException{
       List<Status> statusList = new ArrayList<Status>();
 
       ResultSet rs;
       try {
-        rs = statement.executeQuery("select * from supportStatus");
+        rs = statement.executeQuery("select * from supportStatus where guildId = %s;".formatted(guildId));
 
         while(rs.next()){
           int id = rs.getInt("id");
           String status = rs.getString("supportStatus");
           Date timeAdded = simpleDateFormat.parse(rs.getString("timeAdded"));
-          statusList.add(new Status(id, status, timeAdded));
+          statusList.add(new Status(id,guildId, status, timeAdded));
         }
       } catch (SQLException | ParseException e) {
         throw e;
@@ -226,9 +239,9 @@ public class Database {
       return statusList;
     }
 
-    public static Status getLatestStatus() throws SQLException , ParseException  {
+    public static Status getLatestStatus(long guildId) throws SQLException , ParseException  {
         try{
-            List<Status> statusList = getStatusList();
+            List<Status> statusList = getStatusList(guildId);
             if(statusList.isEmpty()) return null;
             return statusList.get(statusList.size()-1);
         }catch (SQLException | ParseException e){
@@ -238,17 +251,18 @@ public class Database {
 
     //ROLES
 
-    public static void addRole( long roleId, int days) throws SQLException {
+    public static void addRole(long guildId, long roleId, int days) throws SQLException {
       //checks if the role has already been added
-      List<GuildRole> guildRoles = getGuildRoles();
+      List<GuildRole> guildRoles = getGuildRoles(guildId);
       for(GuildRole g : guildRoles){
         if(g.roleId == roleId){
           break;
         }
       }
 
+
       try{
-        statement.executeUpdate("INSERT INTO roles (roleId, days) VALUES (%s,%s)".formatted(roleId,days));
+        statement.executeUpdate("INSERT INTO roles (guildId, roleId, days) VALUES (%s,%s,%s)".formatted(guildId,roleId,days));
       }catch(SQLException e) {
         e.printStackTrace();
           throw e;
@@ -256,15 +270,15 @@ public class Database {
 
     }
 
-    public static List<GuildRole> getGuildRoles() throws SQLException {
+    public static List<GuildRole> getGuildRoles(long guildId) throws SQLException {
       List<GuildRole> list= new ArrayList<GuildRole>();
       ResultSet rs;
       try {
-        rs = statement.executeQuery("select * from roles");
+        rs = statement.executeQuery("select * from roles WHERE guildId = %s".formatted(guildId));
 
         while(rs.next())
         {
-          list.add(new GuildRole(rs.getLong("roleId"), rs.getInt("days")));
+          list.add(new GuildRole(guildId, rs.getLong("roleId"), rs.getInt("days")));
         }
       } catch (SQLException e) {
         e.printStackTrace();
@@ -275,10 +289,10 @@ public class Database {
 
     }
 
-    public static void updateDays(long roleId, int days) throws SQLException {
-        if(roleIsInDatabase(roleId)){
+    public static void updateDays(long guildId, long roleId, int days) throws SQLException {
+        if(roleIsInDatabase(guildId,roleId)){
             try {
-                statement.executeUpdate("UPDATE roles SET days = %s WHERE roleId = %s;".formatted(days,roleId));
+                statement.executeUpdate("UPDATE roles SET days = %s WHERE guildId = %s AND roleId = %s;".formatted(days,guildId,roleId));
             } catch (SQLException e) {
                 e.printStackTrace();
                 throw e;
@@ -286,10 +300,10 @@ public class Database {
         }
     }
 
-    public static boolean roleIsInDatabase(long roleId) throws SQLException {
+    public static boolean roleIsInDatabase(long guildId,long roleId) throws SQLException {
         ResultSet rs=null;
         try {
-            rs = statement.executeQuery("select * from roles WHERE roleId = %s".formatted(roleId));
+            rs = statement.executeQuery("select * from roles WHERE guildId = %s AND roleId = %s".formatted(guildId,roleId));
 
             return rs.next();
         } catch (SQLException e) {
@@ -298,13 +312,24 @@ public class Database {
         }
     }
 
-    public static void deleteRole(long roleId)throws SQLException{
+    public static void deleteRole(long guildId, long roleId)throws SQLException{
       try {
-        statement.executeUpdate("DELETE FROM roles WHERE roleId = %s;".formatted(roleId));
+        statement.executeUpdate("DELETE FROM roles WHERE guildId = %s AND roleId = %s;".formatted(guildId,roleId));
       } catch (SQLException e) {
         e.printStackTrace();
         throw e;
       }
     }
 
+    //OWNER
+
+    public static void setGuildOwner(long guildId, Guild guild) throws SQLException {
+        ResultSet rs;
+        try{
+            statement.executeUpdate("INSERT OR REPLACE INTO servers (guildId, ownerId) Values (%s,%s)".formatted(guildId, guild.getOwnerId()));
+        }catch (SQLException e){
+            e.printStackTrace();
+            throw e;
+        }
+    }
 }

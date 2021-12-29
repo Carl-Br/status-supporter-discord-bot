@@ -12,10 +12,6 @@ public class CommandListener extends ListenerAdapter {
     @Override
     public void onSlashCommand(SlashCommandEvent event)
     {
-        if(event.getGuild().getIdLong()!= Bot.guildId){
-            //wrong server
-            return;
-        }
         for (SlashCommand slashCommand: Bot.commandList) {
             if(event.getName().equals(slashCommand.name)){
                 try {

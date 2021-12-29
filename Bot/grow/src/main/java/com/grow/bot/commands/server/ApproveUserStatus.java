@@ -5,7 +5,7 @@ package com.grow.bot.commands.server;
     import com.grow.Database.Status;
     import com.grow.bot.Bot;
     import com.grow.bot.commands.SlashCommand;
-    import com.grow.bot.commands.server.Listener.ConfirmServerChangeButtonListener;
+    import net.dv8tion.jda.api.EmbedBuilder;
     import net.dv8tion.jda.api.entities.*;
     import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
     import net.dv8tion.jda.api.interactions.components.Button;
@@ -21,14 +21,13 @@ public class ApproveUserStatus extends SlashCommand {
     public void run(SlashCommandEvent event) throws Exception{
 
         long userid = event.getUser().getIdLong();
-        long guildId = event.getGuild().getIdLong();
-        event.deferReply().setEphemeral(true).queue(); // Tell discord we received the command, send a thinking... message to the user
+
 
         //get Server supporter status list
-        List<Status> serverStatusList = Database.getStatusList(guildId);
+        List<Status> serverStatusList = Database.getStatusList();
         if(serverStatusList.isEmpty()){
             //the Mods haven't set up a supporter status yet.
-            event.getHook().sendMessage("the Mods haven't set up a supporter status yet").setEphemeral(true).queue();
+            event.replyEmbeds(Bot.getReplyEmbed("error","The mods haven't set up a supporter status yet.").build()).setEphemeral(true).queue();
             return;
         }
 
@@ -37,31 +36,10 @@ public class ApproveUserStatus extends SlashCommand {
 
            // if member is in database
         if(Database.userIsInDB(userid)){
-                /*if(member is status supporter in this guild)
-                    msg: you are already a status supporter in this guild
-                 */
-            long guildIdFromUser = Database.getGuildIdFromUser(userid);
-            if(guildIdFromUser== guildId){
-                event.getHook().sendMessage("You are a status supporter in this server.").queue();
-                return;
-            }
-            else{
-                /*else:
-                    //msg: you are still a status supporter in the server :....., do you really want to lose all your
-                    //status supporter roles in this server and become a status member here?
-                    Button yes no
-                 */
-                String currentStatusSupporterServerName = Bot.jda.getGuildById(guildIdFromUser).getName();
-                event.getHook().sendMessage("You are still a status supporter in the server: "+currentStatusSupporterServerName +
-                    ", do you really want to lose all your\nstatus supporter roles in "+currentStatusSupporterServerName+" and become a status member here?")
-                    .addActionRow(
-                        ConfirmServerChangeButtonListener.getServerChangeConfirmationButtons(userid, guildId)
-                    ).queue();
-                return;
-            }
+            event.replyEmbeds(Bot.getReplyEmbed("success",
+                "You are a status supporter in this server.").build()).queue();
+            return;
         }
-
-
 
         //get user Status
         String userStatus = null;
@@ -71,21 +49,26 @@ public class ApproveUserStatus extends SlashCommand {
             }
         }
         if(userStatus==null){
-            event.getHook().sendMessage("You don't have any user status. Make sure that you are not set to offline.").setEphemeral(true).queue();
+            event.replyEmbeds(Bot.getReplyEmbed("error",
+                "You don't have any user status. Make sure that you are not set to offline.").build()).setEphemeral(true).queue();
             return;
         }
 
-
+        //get the guild
         Guild guild = event.getGuild();
 
-        List<GuildRole> guildRoles = Database.getGuildRoles(guildId);
-        String latestServerStatus = Database.getLatestStatus(guildId).supporterStatus;//the status the member has to apply
+        // get the supporter roles
+        List<GuildRole> guildRoles = Database.getGuildRoles();
+        String latestServerStatus = Database.getLatestStatus().supporterStatus;//the status the member has to apply
 
         //check if userStatus starts with Server supporter status
         if(userStatus.equals(latestServerStatus)){
-            Database.addOrUpdateUser(userid,guildId);
-            event.getHook().sendMessage("You are now a Status Supporter!").queue();
-            System.out.println(guildRoles.size());
+            Database.addOrUpdateUser(userid);
+
+
+            event.replyEmbeds(Bot.getReplyEmbed("success",
+                "You are now a Status Supporter!").build()).queue();
+
             //give roles
             for(GuildRole g : guildRoles){
                 if(g.days==0){
@@ -94,14 +77,14 @@ public class ApproveUserStatus extends SlashCommand {
                     //The role doesn't exist anymore
                     if(role==null){
                         //delete the role from the database
-                        Database.deleteRole(guildId,g.roleId);
+                        Database.deleteRole(g.roleId);
                         continue;
                     }
 
                     event.getGuild().addRoleToMember(event.getMember(),role).queue();
                     event.getUser().openPrivateChannel().queue(channel -> { // this is a lambda expression
                         // the channel is the successful response
-                        channel.sendMessage("You now got the role %s in the server : %s".formatted(role .getName(),guild.getName())).queue();
+                        channel.sendMessage("You now got the role %s in the server : %s.".formatted(role .getName(),guild.getName())).queue();
                     });
                 }
             }
@@ -109,6 +92,8 @@ public class ApproveUserStatus extends SlashCommand {
         }
 
         //else error message: you customizable user status: \"%s/" doesn't start with [server support status]
-        event.getHook().sendMessage("ERROR: you customizable user status is not equal to "+latestServerStatus).setEphemeral(true).queue();
+
+        event.replyEmbeds(Bot.getReplyEmbed("error",
+            "Your customizable user status is not equal to: "+latestServerStatus+".").build()).setEphemeral(true).queue();
     }
 }

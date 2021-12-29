@@ -3,7 +3,6 @@ package com.grow.bot.commands.server;
 import com.grow.Database.Database;
 import com.grow.Database.GuildRole;
 import com.grow.Database.Status;
-import com.grow.bot.Bot;
 import com.grow.bot.commands.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -21,13 +20,15 @@ public class ServerInfo extends SlashCommand {
     @Override
     public void run(SlashCommandEvent event) throws Exception {
 
-        EmbedBuilder embed = Bot.getReplyEmbed("server Info","");
+        EmbedBuilder embed = new EmbedBuilder();
+        embed .setTitle("server info");
+        long guildId = event.getGuild().getIdLong();
         //get amount of status supporter
-        int statusSupporterCount = Database.getStatusSupporterCount();
+        int statusSupporterCount = Database.getStatusSupporterCount(guildId);
         embed.addField("Amount of status supporter :",String.valueOf(statusSupporterCount)+"\n\n------------------",true);
 
         //get every status
-        List<Status> statusList = Database.getStatusList();
+        List<Status> statusList = Database.getStatusList(guildId);
         Collections.reverse(statusList);
         //current status = statusList.get(0);
         String latestStatus="";
@@ -39,7 +40,7 @@ public class ServerInfo extends SlashCommand {
         //outdated status = statusList (without the first one)
 
         //roles
-        List<GuildRole> roleStatus = Database.getGuildRoles();
+        List<GuildRole> roleStatus = Database.getGuildRoles(guildId);
         embed.addField("Roles :","",false);
         String rolenames ="";
         String days ="";
@@ -49,7 +50,7 @@ public class ServerInfo extends SlashCommand {
             //The role doesn't exist anymore
             if(role==null){
                 //delete the role from the database
-                Database.deleteRole(g.roleId);
+                Database.deleteRole(guildId,g.roleId);
                 continue;
             }
 
@@ -58,7 +59,6 @@ public class ServerInfo extends SlashCommand {
         }
         embed.addField("name",rolenames,true);
         embed.addField("required streak",days,true);
-
 
         event.replyEmbeds(embed.build()).queue();
     }

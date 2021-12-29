@@ -31,15 +31,14 @@ public class StatusChecker {
 
 
                     //get the current status from the user with only one request!
-                   //List<Activity> membersActivity = jda.getGuildById(usersList.get(i).guildId).getMemberById(usersList.get(i).userId).getActivities();
+                    List<Activity> membersActivity = jda.getGuildById(usersList.get(i).guildId).getMemberById(usersList.get(i).userId).getActivities();
 
-                    /*if they are not offline:
+                    //if they are not offline:
                     for(Activity a : membersActivity){
                         if(a.getType().equals( Activity.ActivityType.)){
-                            //userStatus = a.getName();
+                            userStatus = a.getName();
                         }
                     }
-                    */
 
 
                     //check if they have one of the status their are supposed to have the status they are supposed to have

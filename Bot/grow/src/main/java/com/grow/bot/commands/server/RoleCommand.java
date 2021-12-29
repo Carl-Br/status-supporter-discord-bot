@@ -1,14 +1,15 @@
 package com.grow.bot.commands.server;
 
 import com.grow.Database.Database;
+import com.grow.bot.Bot;
 import com.grow.bot.commands.SlashCommand;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 
 public class RoleCommand extends SlashCommand {
@@ -21,16 +22,19 @@ public class RoleCommand extends SlashCommand {
             .addChoice("remove","remove")
                 .addChoice("edit","edit"),
             new OptionData(OptionType.ROLE, "role", "The role you would like to give people.", true),
-            new OptionData(OptionType.INTEGER, "days", "Supporters need a streak of this amount of days to get this role. ")));
+            new OptionData(OptionType.INTEGER, "required_streak_of_days", "Supporters need a streak of this amount of days to get this role. ")));
     }
 
 
     @Override
     public void run(SlashCommandEvent event) throws Exception {
 
+
         //check permission
         if(!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_SERVER)){
-            event.reply("you don't have the permission to manage the server").setEphemeral(true).queue();
+
+            event.replyEmbeds(Bot.getReplyEmbed("error",
+                "You don't have the permission to manage the server.").build()).setEphemeral(true).queue();
             return;
         }
         //else
@@ -50,39 +54,47 @@ public class RoleCommand extends SlashCommand {
     void addRole(SlashCommandEvent event) throws Exception {
         Role role= event.getOption("role").getAsRole();
         int days = 0;
-        if(event.getOption("days")!=null){
-            if(Objects.requireNonNull(event.getOption("days")).getAsLong()>5000
-                | Objects.requireNonNull(event.getOption("days")).getAsLong()<0){
+        OptionMapping  requiredStreakOption = event.getOption("required_streak_of_days");
+        if( requiredStreakOption!=null){
+            if( requiredStreakOption.getAsLong()>5000 |  requiredStreakOption.getAsLong()<0){
 
-                event.reply("The number of days must be between 0 and 5000").setEphemeral(true).queue();
+                event.replyEmbeds(Bot.getReplyEmbed("error",
+                    "The number of days must be between 0 and 5000.").build()).setEphemeral(true).queue();
                 return;
             }else{
-                days = Integer.parseInt(String.valueOf(Objects.requireNonNull(event.getOption("days")).getAsLong()));
+                days = Integer.parseInt( requiredStreakOption.getAsString());
             }
         }
 
 
         //check if the role is already used --> error message
-        if(Database.roleIsInDatabase(event.getGuild().getIdLong(), role.getIdLong())){
-            event.reply("The role %s has has already been added.".formatted(role.getName())).setEphemeral(true).queue();
+        if(Database.roleIsInDatabase(role.getIdLong())){
+
+            event.replyEmbeds(Bot.getReplyEmbed("error",
+                "The role %s has already been added.".formatted(role.getName())).build()).setEphemeral(true).queue();
+
         }else{
             //add role
-            Database.addRole(event.getGuild().getIdLong(),role.getIdLong(),days);
-            event.reply("The role %s has been added to status supporter roles list".formatted(role.getName())).queue();
+            Database.addRole(role.getIdLong(),days);
+            System.out.println(days);
+            event.replyEmbeds(Bot.getReplyEmbed("success",
+                "The role %s has been added to status supporter roles list.".formatted(role.getName())).build()).setEphemeral(true).queue();
         }
     }
 
     void removeRole(SlashCommandEvent event) throws Exception {
         Role role= event.getOption("role").getAsRole();
-        long guildId = event.getGuild().getIdLong();
 
         //if  the role is not in the status supporter role list
-        if(!Database.roleIsInDatabase(guildId,role.getIdLong())){
-            event.reply("The role %s is not in the status supporter roles list".formatted(role.getName())).setEphemeral(true).queue();
+        if(!Database.roleIsInDatabase(role.getIdLong())){
+
+            event.replyEmbeds(Bot.getReplyEmbed("error",
+                "The role %s is not in the status supporter roles list".formatted(role.getName())).build()).setEphemeral(true).queue();
 
         }else{
-            Database.deleteRole(guildId,role.getIdLong());
-            event.reply("The role %s hast been removed from the status supporter roles list".formatted(role.getName())).queue();
+            Database.deleteRole(role.getIdLong());
+            event.replyEmbeds(Bot.getReplyEmbed("error",
+                "The role %s hast been removed from the status supporter roles list.".formatted(role.getName())).build()).setEphemeral(true).queue();
         }
 
 
@@ -90,27 +102,33 @@ public class RoleCommand extends SlashCommand {
 
     void updateDays(SlashCommandEvent event) throws Exception {
         Role role= event.getOption("role").getAsRole();
-        long guildId = event.getGuild().getIdLong();
 
-        if(!Database.roleIsInDatabase(guildId,role.getIdLong())){
-            event.reply("The role %s is not in the status supporter roles list".formatted(role.getName())).setEphemeral(true).queue();
+        OptionMapping  requiredStreakOption = event.getOption("required_streak_of_days");
+
+        if(!Database.roleIsInDatabase(role.getIdLong())){
+            event.replyEmbeds(Bot.getReplyEmbed("error",
+                "The role %s is not in the status supporter roles list.".formatted(role.getName())).build()).setEphemeral(true).queue();
             return;
         }
         int days = 0;
-        if(event.getOption("days")==null){
-            event.reply("Please provide the days parameter to update the days of a role".formatted(role.getName())).setEphemeral(true).queue();
+        if(requiredStreakOption==null){
+            event.replyEmbeds(Bot.getReplyEmbed("error",
+                "Please provide the required_streak_of_days parameter to update the required streak of days to get this role a role.".formatted(role.getName())).build()).setEphemeral(true).queue();
+            return;
         }
-        else{
-            if(event.getOption("days").getAsLong()>5000
-                | event.getOption("days").getAsLong()<0){
 
-                event.reply("The number of days must be between 0 and 5000").setEphemeral(true).queue();
-            }else{
-                days = Integer.parseInt(String.valueOf(Objects.requireNonNull(event.getOption("days")).getAsLong()));
-                Database.updateDays(guildId,role.getIdLong(),days);
-                event.reply("The Number of days of the role %s has been updated to %s".formatted(role.getName(),days)).queue();
-            }
+        if(requiredStreakOption.getAsLong()>5000 | requiredStreakOption.getAsLong()<0){
+
+            event.replyEmbeds(Bot.getReplyEmbed("error",
+                "The number of required_streak_of_days must be between 0 and 5000.").build()).setEphemeral(true).queue();
+
+        }else{
+            days = Integer.parseInt((requiredStreakOption).getAsString());
+            Database.updateDays(role.getIdLong(),days);
+            event.replyEmbeds(Bot.getReplyEmbed("success",
+                "The the required streak of days to get the role %s has been updated to %s.".formatted(role.getName(),days)).build()).setEphemeral(true).queue();
         }
+
     }
 
 }
