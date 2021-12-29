@@ -31,7 +31,6 @@ public class ApproveUserStatus extends SlashCommand {
             event.getHook().sendMessage("the Mods haven't set up a supporter status yet").setEphemeral(true).queue();
             return;
         }
-        long guildIdOfUserFromDatabase = Database.getGuildIdFromUser(userid);
 
         //check if the member is already a status supporter
             //get the member from the database
@@ -79,29 +78,37 @@ public class ApproveUserStatus extends SlashCommand {
 
         Guild guild = event.getGuild();
 
-        List<GuildRole> guildRoles = Database.getGuildRoles(guild .getIdLong());
+        List<GuildRole> guildRoles = Database.getGuildRoles(guildId);
+        String latestServerStatus = Database.getLatestStatus(guildId).supporterStatus;//the status the member has to apply
 
         //check if userStatus starts with Server supporter status
-        for(Status s : serverStatusList){
-            if(userStatus.equals(s.supporterStatus)){
-                Database.addUser(userid,guildId);
-                event.getHook().sendMessage("You are now a Status Supporter!").queue();
-                //give roles
-                for(GuildRole g : guildRoles){
-                    if(g.days==0){
-                        Role role = guild.getRoleById(g.roleId);
-                        assert role != null;
-                        event.getGuild().addRoleToMember(event.getMember(),role);
-                        event.getUser().openPrivateChannel().queue(channel -> { // this is a lambda expression
-                            // the channel is the successful response
-                            channel.sendMessage("You now got the role %s in the server : %s".formatted(role .getName(),guild.getName())).queue();
-                        });
+        if(userStatus.equals(latestServerStatus)){
+            Database.addOrUpdateUser(userid,guildId);
+            event.getHook().sendMessage("You are now a Status Supporter!").queue();
+            System.out.println(guildRoles.size());
+            //give roles
+            for(GuildRole g : guildRoles){
+                if(g.days==0){
+                    Role role = guild.getRoleById(g.roleId);
+
+                    //The role doesn't exist anymore
+                    if(role==null){
+                        //delete the role from the database
+                        Database.deleteRole(guildId,g.roleId);
+                        continue;
                     }
+
+                    event.getGuild().addRoleToMember(event.getMember(),role).queue();
+                    event.getUser().openPrivateChannel().queue(channel -> { // this is a lambda expression
+                        // the channel is the successful response
+                        channel.sendMessage("You now got the role %s in the server : %s".formatted(role .getName(),guild.getName())).queue();
+                    });
                 }
-                return;
             }
+               return;
         }
+
         //else error message: you customizable user status: \"%s/" doesn't start with [server support status]
-        event.getHook().sendMessage("ERROR: you customizable user status is not equal to "+serverStatusList.get(0).supporterStatus).setEphemeral(true).queue();
+        event.getHook().sendMessage("ERROR: you customizable user status is not equal to "+latestServerStatus).setEphemeral(true).queue();
     }
 }

@@ -1,5 +1,7 @@
 package com.grow.Database;
 
+import net.dv8tion.jda.api.entities.Guild;
+
 import java.lang.constant.Constable;
 import java.sql.*;
 import java.text.ParseException;
@@ -25,6 +27,7 @@ public class Database {
           statement.executeUpdate("CREATE TABLE IF NOT EXISTS users (userId INTEGER PRIMARY KEY, guildId INTEGER,timeAdded TEXT);");
           statement.executeUpdate("CREATE TABLE IF NOT EXISTS roles (id INTEGER PRIMARY KEY AUTOINCREMENT, guildId INTEGER, roleId INTEGER, days INTEGER);");
           statement.executeUpdate("CREATE TABLE IF NOT EXISTS supportStatus (id INTEGER PRIMARY KEY AUTOINCREMENT, guildId  INTEGER, supportStatus TEXT, timeAdded TEXT);");
+          statement.executeUpdate("CREATE TABLE IF NOT EXISTS servers (guildId  INTEGER PRIMARY KEY, ownerId INTEGER);");
         }
         catch(SQLException e)
         {
@@ -51,23 +54,38 @@ public class Database {
     //für die Methode addSupportStatus() , clearServerTable() und addUser()
     static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SSS");
 
-    public static void addUser(long userId, long guildId){
+    //USER
+
+    public static List<User> getAllUsers() throws SQLException, ParseException {
+        List<User> userList = new ArrayList<User>();
+        ResultSet rs;
+        //get allUsersFromUsers
+        rs = statement.executeQuery("select * from users");
+
+        while(rs.next()){
+            userList.add(new User(rs.getLong("userId"),rs.getLong("guildId"),simpleDateFormat.parse(rs.getString("timeAdded"))));
+            System.out.println(rs.getLong("userId")+"    Database.java line 67, getAllUsers()");
+        }
+        return userList;
+    }
+    public static void addOrUpdateUser(long userId, long guildId) throws SQLException{
         String currentDate = simpleDateFormat.format(new Date());
       try {
         statement.executeUpdate("INSERT OR REPLACE INTO users (userId,guildId,timeAdded) VALUES(%s,%s,'%s');".formatted(userId,guildId,currentDate));
-        System.out.println("Added user");
       } catch (SQLException e) {
         e.printStackTrace();
+        throw e;
       }
     }
-    public static void removeUser(long userId){
+    public static void removeUser(long userId)throws SQLException{
       try {
         statement.executeUpdate("DELETE FROM users WHERE userId = %s".formatted(userId));
       } catch (SQLException e) {
         e.printStackTrace();
+        throw e;
       }
     }
-    public static boolean userIsInDB(long userId) throws Exception {
+    public static boolean userIsInDB(long userId) throws SQLException {
         ResultSet rs=null;
         try {
             rs = statement.executeQuery("select * from users WHERE userId = %s ".formatted(userId));
@@ -75,10 +93,27 @@ public class Database {
             return rs.next();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new Exception("an error occurred");
+            throw new SQLException(e);
         }
     }
-    public static long getGuildIdFromUser(long userId){
+
+    public static int getStatusSupporterCount(long guildId) throws SQLException {
+        ResultSet rs;
+        try {
+            rs = statement.executeQuery("select * from users WHERE guildId = %s".formatted(guildId));
+            int count = 0;
+            while(rs.next())
+            {
+                count++;
+            }
+            return count;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException(e);
+        }
+    }
+    /** Return null if there is no user in the database with such an userId*/
+    public static long getGuildIdFromUser(long userId) throws SQLException {
         ResultSet rs;
         try {
             rs = statement.executeQuery("select * from users where userId = %s;".formatted(userId));
@@ -87,19 +122,21 @@ public class Database {
         } catch (SQLException  e) {
             //TODO: handle exception
             e.printStackTrace();
-            throw new NullPointerException();
+            throw e;
         }
     }
 
-    public static void addSupportStatus(long guildId, String supportStatus){
+    //STATUS
+
+    public static void addSupportStatus(long guildId, String supportStatus)throws SQLException{
       String currentDate = simpleDateFormat.format(new Date());
       try {
         statement.executeUpdate("INSERT  INTO supportStatus (guildId,supportStatus,timeAdded) VALUES(%s,'%s','%s');".formatted(guildId,supportStatus,currentDate));
       } catch (SQLException e) {
         e.printStackTrace();
+        throw e;
       }
     }
-
 
     /**Deletes every Dataset in the table, which is older than 48 hours
      * except for the newest one ( which is older than 48 hours)*/
@@ -176,13 +213,13 @@ public class Database {
           }
 
         }
-      } catch (SQLException e) {
+      } catch (SQLException | ParseException e) {
         e.printStackTrace();
       }
 
     }
 
-    public static List<Status> getStatusList(long guildId){
+    public static List<Status> getStatusList(long guildId)throws SQLException , ParseException{
       List<Status> statusList = new ArrayList<Status>();
 
       ResultSet rs;
@@ -196,13 +233,25 @@ public class Database {
           statusList.add(new Status(id,guildId, status, timeAdded));
         }
       } catch (SQLException | ParseException e) {
-        //TODO: handle exception
+        throw e;
       }
 
       return statusList;
     }
 
-    public static void addRole(long guildId, long roleId, int days){
+    public static Status getLatestStatus(long guildId) throws SQLException , ParseException  {
+        try{
+            List<Status> statusList = getStatusList(guildId);
+            if(statusList.isEmpty()) return null;
+            return statusList.get(statusList.size()-1);
+        }catch (SQLException | ParseException e){
+            throw e;
+        }
+    }
+
+    //ROLES
+
+    public static void addRole(long guildId, long roleId, int days) throws SQLException {
       //checks if the role has already been added
       List<GuildRole> guildRoles = getGuildRoles(guildId);
       for(GuildRole g : guildRoles){
@@ -216,11 +265,12 @@ public class Database {
         statement.executeUpdate("INSERT INTO roles (guildId, roleId, days) VALUES (%s,%s,%s)".formatted(guildId,roleId,days));
       }catch(SQLException e) {
         e.printStackTrace();
+          throw e;
       }
 
     }
 
-    public static List<GuildRole> getGuildRoles(long guildId){
+    public static List<GuildRole> getGuildRoles(long guildId) throws SQLException {
       List<GuildRole> list= new ArrayList<GuildRole>();
       ResultSet rs;
       try {
@@ -232,23 +282,25 @@ public class Database {
         }
       } catch (SQLException e) {
         e.printStackTrace();
+          throw e;
       }
 
       return list;
 
     }
 
-    public static void updateDays(long guildId, long roleId, int days) throws Exception {
+    public static void updateDays(long guildId, long roleId, int days) throws SQLException {
         if(roleIsInDatabase(guildId,roleId)){
             try {
                 statement.executeUpdate("UPDATE roles SET days = %s WHERE guildId = %s AND roleId = %s;".formatted(days,guildId,roleId));
             } catch (SQLException e) {
                 e.printStackTrace();
+                throw e;
             }
         }
     }
 
-    public static boolean roleIsInDatabase(long guildId,long roleId) throws Exception {
+    public static boolean roleIsInDatabase(long guildId,long roleId) throws SQLException {
         ResultSet rs=null;
         try {
             rs = statement.executeQuery("select * from roles WHERE guildId = %s AND roleId = %s".formatted(guildId,roleId));
@@ -256,15 +308,28 @@ public class Database {
             return rs.next();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new Exception("an error occurred");
+            throw e;
         }
     }
 
-    public static void deleteRole(long guildId, long roleId){
+    public static void deleteRole(long guildId, long roleId)throws SQLException{
       try {
         statement.executeUpdate("DELETE FROM roles WHERE guildId = %s AND roleId = %s;".formatted(guildId,roleId));
       } catch (SQLException e) {
         e.printStackTrace();
+        throw e;
       }
+    }
+
+    //OWNER
+
+    public static void setGuildOwner(long guildId, Guild guild) throws SQLException {
+        ResultSet rs;
+        try{
+            statement.executeUpdate("INSERT OR REPLACE INTO servers (guildId, ownerId) Values (%s,%s)".formatted(guildId, guild.getOwnerId()));
+        }catch (SQLException e){
+            e.printStackTrace();
+            throw e;
+        }
     }
 }

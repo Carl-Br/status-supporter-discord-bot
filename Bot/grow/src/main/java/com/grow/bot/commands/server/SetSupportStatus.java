@@ -1,6 +1,7 @@
 package com.grow.bot.commands.server;
 
 import com.grow.Database.Database;
+import com.grow.Database.Status;
 import com.grow.bot.commands.SlashCommand;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -20,7 +21,9 @@ public class SetSupportStatus extends SlashCommand {
     }
 
     @Override
-    public void run(SlashCommandEvent event) {
+    public void run(SlashCommandEvent event) throws Exception{
+
+        //event.getGuild().getOwnerId();
         //check permission
         if(!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_SERVER)){
             event.reply("you don't have the permission to manage the server").setEphemeral(true).queue();
@@ -34,12 +37,19 @@ public class SetSupportStatus extends SlashCommand {
         }
         //set the new status to the Database
         event.deferReply().queue(); // Tell discord we received the command, send a thinking... message to the user
+        Status s = Database.getLatestStatus(guildId);
+        if(s!=null){
+            if(s.supporterStatus.equals(status)){
+                event.getHook().sendMessage("This is already the server status.").queue();
+                return;
+            }
+        }
         Database.addSupportStatus(guildId,status);
         if(Database.getStatusList(guildId).size()>1){
-            event.getHook().sendMessage("The supporter status has successfully been change to :\n\n "+status+" \n\nThe members now have 48 hours to" +
+            event.getHook().sendMessage("The supporter status has successfully been change to: "+status+" \nThe members now have 48 hours to" +
                 " change their status. Otherwise they will lose their status supporter roles.").queue();
         }else{
-            event.getHook().sendMessage("The status has successfully been change to :\n\n "+status).queue();
+            event.getHook().sendMessage("The status has successfully been change to: "+status).queue();
         }
 
     }

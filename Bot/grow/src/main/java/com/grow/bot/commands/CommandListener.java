@@ -17,6 +17,7 @@ public class CommandListener extends ListenerAdapter {
                 try {
                     slashCommand.run(event);
                 }catch (Exception e){
+                    e.printStackTrace();
                     EmbedBuilder embed = new EmbedBuilder();
                     embed.setTitle("ayayayayyy :( .... An error occurred!");
                     embed.setColor(Color.RED);
