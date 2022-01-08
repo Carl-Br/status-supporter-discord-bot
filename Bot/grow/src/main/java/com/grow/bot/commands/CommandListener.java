@@ -26,8 +26,8 @@ public class CommandListener extends ListenerAdapter {
                     embed.setTitle("ayayayayyy :( .... An error occurred!");
                     embed.setColor(Color.RED);
                     embed.addField("Exception",e.getMessage(),true);
-                    embed.setDescription("Please join the support server here ....  and tell us the Exception! So we can fix this as fast as possible!");
-                    event.replyEmbeds(embed.build()).queue();
+                    embed.setDescription("Please join the support server [here](https://discord.gg/9gWBUpvfvj)  and tell us the Exception! So we can fix this as fast as possible!");
+                    event.getChannel().sendMessageEmbeds(embed.build()).queue();
                 }
             }
         }

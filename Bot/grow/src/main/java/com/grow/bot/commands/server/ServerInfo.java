@@ -21,10 +21,9 @@ public class ServerInfo extends SlashCommand {
     @Override
     public void run(SlashCommandEvent event) throws Exception {
 
-        EmbedBuilder embed = Bot.getReplyEmbed("server Info","");
+
         //get amount of status supporter
         int statusSupporterCount = Database.getStatusSupporterCount();
-        embed.addField("Amount of status supporter :",String.valueOf(statusSupporterCount)+"\n\n------------------",true);
 
         //get every status
         List<Status> statusList = Database.getStatusList();
@@ -34,17 +33,14 @@ public class ServerInfo extends SlashCommand {
         if(statusList.size()!=0){
             latestStatus=statusList.get(0).supporterStatus;
         }
-        embed.addField("current status support message :",latestStatus,true);
 
         //outdated status = statusList (without the first one)
 
         //roles
         List<GuildRole> roleStatus = Database.getGuildRoles();
-        embed.addField("Roles :","",false);
-        String rolenames ="";
-        String days ="";
+        String rolesOutput ="";
+        int i = 0;
         for(GuildRole g : roleStatus){
-
             Role role = event.getGuild().getRoleById(g.roleId);
             //The role doesn't exist anymore
             if(role==null){
@@ -52,13 +48,22 @@ public class ServerInfo extends SlashCommand {
                 Database.deleteRole(g.roleId);
                 continue;
             }
-
-            rolenames+=role.getName()+"\n";
-            days += g.days+" days\n";
+            i++;
+            rolesOutput+="** "+i+". "+role.getName()+"**";
+            if(g.days!=0){
+                if(g.days==1)
+                    rolesOutput+=" (requires a streak of 1 day)";
+                else
+                    rolesOutput+=" (requires a streak of %s days)".formatted(g.days);
+            }
+            rolesOutput+="\n";
         }
-        embed.addField("name",rolenames,true);
-        embed.addField("required streak",days,true);
-
+        EmbedBuilder embed = new EmbedBuilder();
+        embed.setTitle("╔════════╗\n╟» server Info\n╚════════╝");//<------ contains 2 invisible unicode chars
+        embed.setDescription("┌─────────────\n├» [support server](https://discord.gg/9gWBUpvfvj)\n├─────────────\n├» Status supporter : %s\n└─────────────\n".formatted(statusSupporterCount));
+        embed.addField("┌──────────┐ \n├» support status\n└──────────┘\n",latestStatus,true);
+        embed.addField("⠀\n⠀\n┌─────┐\n├» Roles \n└─────┘\n",rolesOutput,false);//<------ contains 2 invisible unicode chars to make empty lines
+        embed.setColor(Bot.embdedColor);
 
         event.replyEmbeds(embed.build()).queue();
     }

@@ -5,10 +5,8 @@ package com.grow.bot.commands.server;
     import com.grow.Database.Status;
     import com.grow.bot.Bot;
     import com.grow.bot.commands.SlashCommand;
-    import net.dv8tion.jda.api.EmbedBuilder;
     import net.dv8tion.jda.api.entities.*;
     import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-    import net.dv8tion.jda.api.interactions.components.Button;
 
     import java.util.List;
 
@@ -82,10 +80,6 @@ public class ApproveUserStatus extends SlashCommand {
                     }
 
                     event.getGuild().addRoleToMember(event.getMember(),role).queue();
-                    event.getUser().openPrivateChannel().queue(channel -> { // this is a lambda expression
-                        // the channel is the successful response
-                        channel.sendMessage("You now got the role %s in the server : %s.".formatted(role .getName(),guild.getName())).queue();
-                    });
                 }
             }
                return;

@@ -3,7 +3,9 @@ package com.grow.bot.commands;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 
+import javax.annotation.Nullable;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +14,7 @@ import java.util.List;
 public abstract class SlashCommand {
     protected String name = null;
     protected  String description = null;
+    protected CommandPrivilege commandPrivilege;
 
 
     protected Collection<OptionData> optionDataCollection = null;

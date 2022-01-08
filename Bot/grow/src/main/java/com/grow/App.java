@@ -12,8 +12,8 @@ public final class App {
     public static void main(String[] args) {
 
         try {
-            Bot.start();
             Database.connect();
+            Bot.start();
         } catch (LoginException |InterruptedException e) {
             e.printStackTrace();
         }
@@ -27,7 +27,7 @@ public final class App {
             if(input.toLowerCase().equals("shutdown")){
                 Bot.shutdown();
                 Database.closeCon();
-                break;
+                System.exit(0);
             }
             else{
                 System.out.println("No command found!");

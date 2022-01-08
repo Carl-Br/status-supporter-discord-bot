@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 
 import java.util.*;
 
@@ -37,6 +38,7 @@ public class RoleCommand extends SlashCommand {
                 "You don't have the permission to manage the server.").build()).setEphemeral(true).queue();
             return;
         }
+
         //else
 
         String action = Objects.requireNonNull(event.getOption("action")).getAsString();
@@ -65,6 +67,12 @@ public class RoleCommand extends SlashCommand {
                 days = Integer.parseInt( requiredStreakOption.getAsString());
             }
         }
+        if(role.getPosition()>Bot.guild.getBotRole().getPosition()) {
+            event.replyEmbeds(Bot.getReplyEmbed("error",
+                "This role is higher the my role! So I can't give it to anyone.".formatted(role.getName())).build()).setEphemeral(true).queue();
+            return;
+        }
+
 
 
         //check if the role is already used --> error message
@@ -76,7 +84,6 @@ public class RoleCommand extends SlashCommand {
         }else{
             //add role
             Database.addRole(role.getIdLong(),days);
-            System.out.println(days);
             event.replyEmbeds(Bot.getReplyEmbed("success",
                 "The role %s has been added to status supporter roles list.".formatted(role.getName())).build()).setEphemeral(true).queue();
         }
@@ -93,7 +100,7 @@ public class RoleCommand extends SlashCommand {
 
         }else{
             Database.deleteRole(role.getIdLong());
-            event.replyEmbeds(Bot.getReplyEmbed("error",
+            event.replyEmbeds(Bot.getReplyEmbed("success",
                 "The role %s hast been removed from the status supporter roles list.".formatted(role.getName())).build()).setEphemeral(true).queue();
         }
 
