@@ -12,7 +12,11 @@ public class Help extends SlashCommand  {
 
     @Override
     public void run(SlashCommandEvent event) throws Exception {
-        String description = "Everything about the Bot: ";
-        EmbedBuilder embed = Bot.getReplyEmbed("Help", description);
+        String description = "• [test/support server](https://discord.gg/9gWBUpvfvj)\n• [github docs](https://github.com/Carl-Br/status-supporter-discord-bot)";
+        EmbedBuilder embed = new EmbedBuilder();
+        embed.setDescription(description);
+        embed.setTitle("Help");
+        embed.setColor(Bot.embdedColor);
+        event.replyEmbeds(embed.build()).queue();
     }
 }

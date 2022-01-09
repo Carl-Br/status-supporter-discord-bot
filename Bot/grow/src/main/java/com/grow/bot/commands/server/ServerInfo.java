@@ -60,7 +60,7 @@ public class ServerInfo extends SlashCommand {
         }
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle("╔════════╗\n╟» server Info\n╚════════╝");//<------ contains 2 invisible unicode chars
-        embed.setDescription("┌─────────────\n├» [support server](https://discord.gg/9gWBUpvfvj)\n├─────────────\n├» Status supporter : %s\n└─────────────\n".formatted(statusSupporterCount));
+        embed.setDescription("• [test/support server](https://discord.gg/9gWBUpvfvj)\n• [github docs](https://github.com/Carl-Br/status-supporter-discord-bot)\n\n┌─────────────\n├» Status supporter : %s\n└─────────────\n".formatted(statusSupporterCount));
         embed.addField("┌──────────┐ \n├» support status\n└──────────┘\n",latestStatus,true);
         embed.addField("⠀\n⠀\n┌─────┐\n├» Roles \n└─────┘\n",rolesOutput,false);//<------ contains 2 invisible unicode chars to make empty lines
         embed.setColor(Bot.embdedColor);

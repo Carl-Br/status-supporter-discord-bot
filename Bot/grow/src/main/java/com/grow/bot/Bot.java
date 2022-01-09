@@ -11,8 +11,11 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import javax.security.auth.login.LoginException;
+import java.io.FileReader;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -36,8 +39,13 @@ public class Bot {
     public static JDA jda= null;
     public static List<SlashCommand> commandList = new ArrayList<SlashCommand>();
     public static void start() throws LoginException, InterruptedException {
+
+        //gets the config from the config.json
+        setupConfig();
+
         // Note: It is important to register your ReadyListener before building
         jda = JDABuilder.createDefault(token, GatewayIntent.GUILD_PRESENCES,GatewayIntent.GUILD_MEMBERS)
+            .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOTE)
             .addEventListeners(new CommandListener())
             .enableCache(CacheFlag.ACTIVITY)
             //.setHttpClientBuilder and setHttpClient
@@ -54,15 +62,12 @@ public class Bot {
         commandList.add(new ApproveUserStatus("approve_status","Approves your status"));
         commandList.add(new ServerInfo("info","Shows: status supporter count, current status supporter message, the roles "));
         commandList.add(new MyStreak("my_streak","The streak of days on how long you have been a status supporter"));
+        commandList.add(new Help("help","help"));
 
         /*refresh all Commands ( only for debug)
         jda.updateCommands().queue();
         */
 
-        //jda.getGuildById(817346279771340851L).updateCommands().queue();
-
-        //set guild Id
-        guildId=817346279771340851L;
 
         //set all my Commands from the commandList
         guild = jda.awaitReady().getGuildById(guildId);
@@ -127,7 +132,7 @@ public class Bot {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(embdedColor);
         embed.setTitle(title);
-        embed.setDescription(description+="\n\n[support server](https://discord.gg/9gWBUpvfvj)");
+        embed.setDescription(description+="\n\n• [test/support server](https://discord.gg/9gWBUpvfvj)\n• [github docs](https://github.com/Carl-Br/status-supporter-discord-bot)");
 
 
         if(title.toLowerCase().contains("success"))
@@ -136,6 +141,34 @@ public class Bot {
             embed.setThumbnail("https://cdn.discordapp.com/attachments/817346280250540034/925875821971922944/false-2061132.png");
 
         return embed;
+    }
+
+    public static void setupConfig(){
+        JSONParser parser = new JSONParser();
+        try{
+            JSONObject jsonObject = (JSONObject)parser.parse(new FileReader(".//config.json"));
+            token = (String)jsonObject.get("token");
+            System.out.println("token: "+token);
+
+            guildId = Long.parseLong((String)jsonObject.get("guildId"));
+            System.out.println("guildId: "+guildId);
+
+
+            String[] rgb = jsonObject.get("embedColor").toString().split(",");
+            embdedColor = new Color(Integer.parseInt(rgb[0]),Integer.parseInt(rgb[1]),Integer.parseInt(rgb[2]));
+
+            maxReqPerSecondStatusChecker = Integer.parseInt((String)jsonObject.get("maxReqPerSecondStatusChecker"));
+
+            if(maxReqPerSecondStatusChecker >14 || maxReqPerSecondStatusChecker <=0){
+                throw new Exception("maxReqPerSecondStatusChecker has to be between 1 and 14");
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+            shutdown();
+        }
+
+
     }
 
 }
