@@ -12,7 +12,7 @@ public class Help extends SlashCommand  {
 
     @Override
     public void run(SlashCommandEvent event) throws Exception {
-        String description = "Everything about the Bot: "
+        String description = "Everything about the Bot: ";
         EmbedBuilder embed = Bot.getReplyEmbed("Help", description);
     }
 }
