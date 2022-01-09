@@ -24,7 +24,7 @@ import java.util.Locale;
 public class Bot {
 
     //config
-    private static String token = "OTE3ODkxOTkxNjg4MzM5NDU2.Ya_TiA.htrqnJ0ywi6Y6ETka3YjBG2u9mE";
+    private static String token = "";
     public static int maxReqPerSecondStatusChecker = 2;
     public static long guildId = 0;
     public static Color embdedColor = Color.blue;
