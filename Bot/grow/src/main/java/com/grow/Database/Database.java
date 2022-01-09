@@ -71,7 +71,11 @@ public class Database {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(simpleDateFormatPattern);
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery("select timeAdded from users WHERE userId = " + userId);
+
+        if(rs.isClosed())return null;
+
         Date timeAdded = simpleDateFormat.parse(rs.getString("timeAdded"));
+        statement.closeOnCompletion();
         return new User(userId, timeAdded);
     }
 

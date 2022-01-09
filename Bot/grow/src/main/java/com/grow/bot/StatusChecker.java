@@ -84,7 +84,7 @@ public class StatusChecker {
                    if(alreadyHasRole)continue;
 
                    //check if the member has the user status long enough to get this role
-                    if(usersList.get(i).timeAdded.getTime()>new Date().getTime()-(1000L*60*60*24*role.days)) {//if [the time the user set the status] > [required seconds -  current timestamp]
+                    if(usersList.get(i).timeAdded.getTime()<new Date().getTime()-(1000L*60*60*24*role.days)) {//if [the time the user set the status] > [required seconds -  current timestamp]
                         //add the role to the user
                         waitUntilReqAvailable();
                         Bot.guild.addRoleToMember(member, Bot.guild.getRoleById(role.roleId)).queue();

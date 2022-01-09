@@ -1,6 +1,7 @@
 package com.grow.bot.commands.server;
 
 import com.grow.Database.Database;
+import com.grow.Database.User;
 import com.grow.bot.Bot;
 import com.grow.bot.commands.SlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -16,7 +17,16 @@ public class MyStreak extends SlashCommand {
     @Override
     public void run(SlashCommandEvent event) throws Exception {
 
-        long userStatusGotApprovedMs =  Database.getUser(event.getUser().getIdLong()).timeAdded.getTime();
+        User user = Database.getUser(event.getUser().getIdLong());
+
+        //if the user is not in the Database
+        if(user==null){
+            EmbedBuilder embed = Bot.getReplyEmbed("You are not a status supporter!","Do /help on how to become a status supporter");
+            event.replyEmbeds(embed.build()).queue();
+            return;
+        }
+
+        long userStatusGotApprovedMs =  user.timeAdded.getTime();
         long currentMs = new Date().getTime();
 
         long streakInMs = currentMs-userStatusGotApprovedMs;
