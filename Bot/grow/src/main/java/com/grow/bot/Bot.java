@@ -50,7 +50,7 @@ public class Bot {
             .enableCache(CacheFlag.ACTIVITY)
             //.setHttpClientBuilder and setHttpClient
             .build();
-            //https://discord.com/developers/applications/917891991688339456/oauth2/url-generator
+
 
 
         // optionally block until JDA is ready
