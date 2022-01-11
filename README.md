@@ -47,13 +47,13 @@ lets you set the server status of the server, which the users can put in their c
 
 1. actions:
         - add: 
-        - lets you add a role to the List of roles, members can get as reward.
-        - 
+        lets you add a role to the List of roles, members can get as reward.
+
         - edit: 
-        - lets you edit the amount of days a member requires to be a status supporter to get this role
-        - 
+        lets you edit the amount of days a member requires to be a status supporter to get this role
+
         - remove: 
-        - deletes a role from the status supporter roles List
+        deletes a role from the status supporter roles List
         
 2. role: The role you would like to add/edit/remove from the status supporter roles List
       
