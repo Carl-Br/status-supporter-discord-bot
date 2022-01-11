@@ -23,7 +23,7 @@ Some of them may require you to have a streak of a certain amount of days to get
 
 ## How to set it up as an Admin
 
-First of all you need to find a interesting status supporter message, the members can set as their status. Make sure it's not longer than 123 characters!
+First of all you need to find a interesting status supporter message, the members can set as their status. Make sure it's not longer than 128 characters!
 Now do `/set_server_status status:status supporter message` and set the status supporter message as parameter.
 
 Now do `/role action:add role:role`, you can also add the optional parameter "days:" to only give this role to members who had a custom status since this amount of days.
