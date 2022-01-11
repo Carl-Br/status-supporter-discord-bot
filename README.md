@@ -9,11 +9,10 @@ This will help the server grow by making your members showing your server (or ot
 Right when theirs friends open discord or when they just chat.
 
 ## directory
-1. How it works as a server member
-2. How to set it up as an Admin
-3. Every Command
-4. How to host the bot
-5. Help
+1. [How it works as a server member](#how-it works-as-a-server-member)
+2. [How to set it up as an Admin](#how-to-set-it-up-as-an-admin)
+3. [Every Command](#every-command)
+4. [How to host the bot](#how-to-host-the-bot)
 
 
 ## How it works as a server member
@@ -60,7 +59,7 @@ shows your streak of days of beiing a status supporter for this server.
 
 ## How to host the bot:
 
-Contact me on discord if you need help! (`Carl ;)#2284`)
+Contact me on discord if you need help! ( `Carl ;)#2284` )
 
 Every server needs it's own version of this bot because it has to make lot's of requests to constatly check the members status. Otherwise the ip adress 
 would get rate limited and banned.
