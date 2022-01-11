@@ -9,7 +9,7 @@ This will help the server grow by making your members showing your server (or ot
 Right when theirs friends open discord or when they just chat.
 
 ## directory
-1. [How it works as a server member](#how-it works-as-a-server-member)
+1. [How it works as a server member](#how-it-works-as-a-server-member)
 2. [How to set it up as an Admin](#how-to-set-it-up-as-an-admin)
 3. [Every Command](#every-command)
 4. [How to host the bot](#how-to-host-the-bot)
