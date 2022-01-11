@@ -74,8 +74,8 @@ run this [StatusSupporterBot.jar](https://github.com/Carl-Br/status-supporter-di
   "maxReqPerSecondStatusChecker": "10"
 }
 ```
-token: token of the bot,
-embedColor: the color of the embed, the Bot sends as response
-guildId: the guildId of the server you want to user this bot in.
-maxReqPerSecondStatusChecker: The amount of requests he bot makes to check a members status per second ( must be between 0 and 14)
+- token: token of the bot,
+- embedColor: the color of the embed, the Bot sends as response
+- guildId: the guildId of the server you want to user this bot in.
+- maxReqPerSecondStatusChecker: The amount of requests he bot makes to check a members status per second ( must be between 0 and 14)
       
