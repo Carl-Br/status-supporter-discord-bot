@@ -60,7 +60,7 @@ shows your streak of days of beiing a status supporter for this server.
 
 ## How to host the bot:
 
-Contact me on discord if you need help!
+Contact me on discord if you need help! (`Carl ;)#2284`)
 
 Every server needs it's own version of this bot because it has to make lot's of requests to constatly check the members status. Otherwise the ip adress 
 would get rate limited and banned.
