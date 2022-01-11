@@ -1,7 +1,7 @@
 # status-supporter-discord-bot
 
 ## what this bot doing and how it can help your server grow
-##[test/support server](https://discord.gg/9gWBUpvfvj)
+## [test/support server](https://discord.gg/9gWBUpvfvj)
 
 Basically, this bot is rewarding members for haven a certain custom user status by giving them certain roles.
 
@@ -44,14 +44,15 @@ shows server information: Amount of status supporter, current support status and
 lets you set the server status of the server, which the users can put in their custom status to support the server and to get roles as reward.
 
 ### 4. role:
-      1. actions:
-        -add: lets you add a role to the List of roles, members can get as reward.
-        -edit: lets you edit the amount of days a member requires to be a status supporter to get this role
-        -remove: deletes a role from the status supporter roles List
+
+1. actions:
+-add: lets you add a role to the List of roles, members can get as reward.
+-edit: lets you edit the amount of days a member requires to be a status supporter to get this role
+-remove: deletes a role from the status supporter roles List
         
-      2. role: The role you would like to add/edit/remove from the status supporter roles List
+2. role: The role you would like to add/edit/remove from the status supporter roles List
       
-      3. days: the amount of days a member requires to be a status supporter to get this role
+3. days: the amount of days a member requires to be a status supporter to get this role
       
 ### 5. my_streak: 
 shows your streak of days of beiing a status supporter for this server.
@@ -63,7 +64,7 @@ Contact me on discord if you need help!
 
 Every server needs it's own version of this bot because it has to make lot's of requests to constatly check the members status. Otherwise the ip adress 
 would get rate limited and banned.
-**That's why It's very important that this bot is not sharing his ip adress with any other discord bot!**
+**That's why It's very important that this bot is not sharing its ip adress with any other discord bot!**
 
 run this [StatusSupporterBot.jar](https://github.com/Carl-Br/status-supporter-discord-bot/raw/main/Bot/grow/out/artifacts/grow_jar/StatusSupporterBot.jar) file on your server and make sure to add a `config.json` file in the same directory, which has to look like this:
 ```
