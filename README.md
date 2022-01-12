@@ -23,7 +23,9 @@ Some of them may require you to have a streak of a certain amount of days to get
 
 ## How to set it up as an Admin
 
-First of all you need to find a interesting status supporter message, the members can set as their status. Make sure it's not longer than 128 characters!
+**First of all you have to make sure that the bot role is higher than every other role, so it can manage the roles.**
+
+Now you need to find a interesting status supporter message, the members can set as their status. Make sure it's not longer than 128 characters!
 Now do `/set_server_status status:status supporter message` and set the status supporter message as parameter.
 
 Now do `/role action:add role:role`, you can also add the optional parameter "days:" to only give this role to members who had a custom status since this amount of days.
@@ -64,6 +66,8 @@ Contact me on discord if you need help! ( `Carl ;)#2284` )
 Every server needs it's own version of this bot because it has to make lot's of requests to constatly check the members status. Otherwise the ip adress 
 would get rate limited and banned.
 **That's why It's very important that this bot is not sharing its ip adress with any other discord bot!**
+
+**when creating the bot at the developer portal make sure to enable both Privileged Gateway Intents!**
 
 run this [StatusSupporterBot.jar](https://github.com/Carl-Br/status-supporter-discord-bot/raw/main/Bot/grow/out/artifacts/grow_jar/StatusSupporterBot.jar) file on your server and make sure to add a `config.json` file in the same directory, which has to look like this:
 ```
