@@ -36,19 +36,19 @@ public class StatusChecker {
             return;
         }
         //for each user
-        for (int i = 0; i < usersList.size(); i++) {
+        for (User user : usersList) {
 
 
             waitUntilReqAvailable();
-            Member member = Bot.guild.getMemberById(usersList.get(i).userId);//req 1
+            Member member = Bot.guild.getMemberById(user.userId);
 
             waitUntilReqAvailable();
             //if member is offline
-            if (member.getOnlineStatus().name().equals("OFFLINE")) //req 2
+            if (member.getOnlineStatus().name().equals("OFFLINE"))
                 break;
 
             waitUntilReqAvailable();
-            List<Activity> membersActivity = Bot.guild.getMemberById(usersList.get(i).userId).getActivities();
+            List<Activity> membersActivity = Bot.guild.getMemberById(user.userId).getActivities();
 
             String userStatus = "";
             for (Activity a : membersActivity) {
@@ -60,41 +60,46 @@ public class StatusChecker {
             //check if they have one of the status their are supposed to have
 
             boolean memberHasCorrectStatus = false;
-            for(Status s : Database.getStatusList()){
-                if(s.supporterStatus.equals(userStatus)){
+            for (Status s : Database.getStatusList()) {
+                if (s.supporterStatus.equals(userStatus)) {
                     memberHasCorrectStatus = true;
                     break;
                 }
             }
 
             //The Member has a correct status
-            if( memberHasCorrectStatus){
+            if (memberHasCorrectStatus) {
                 //check if they should get another role
                 waitUntilReqAvailable();
                 List<Role> memberRoles = member.getRoles();
-                for(GuildRole role : Database.getGuildRoles()){
+                for (GuildRole role : Database.getGuildRoles()) {
+
 
                     //check if the member already has the role
                     boolean alreadyHasRole = false;
-                   for(Role r : memberRoles){
-                       if(r.getIdLong()==role.roleId){
-                           alreadyHasRole = true;//Member already has this role
-                       }
-                   }
-                   if(alreadyHasRole)continue;
+                    for (Role r : memberRoles) {
+                        if (r.getIdLong() == role.roleId) {
+                            alreadyHasRole = true;//Member already has this role
+                        }
+                    }
+                    if (alreadyHasRole) continue;
 
-                   //check if the member has the user status long enough to get this role
-                    if(usersList.get(i).timeAdded.getTime()<new Date().getTime()-(1000L*60*60*24*role.days)) {//if [the time the user set the status] > [required seconds -  current timestamp]
+                    //check if the member has the user status long enough to get this role
+                    if (user.timeAdded.getTime() < new Date().getTime() - (1000L * 60 * 60 * 24 * role.days)) {//if [the time the user set the status] > [required seconds -  current timestamp]
                         //add the role to the user
                         waitUntilReqAvailable();
-                        Bot.guild.addRoleToMember(member, Bot.guild.getRoleById(role.roleId)).queue();
+                        Role r = Bot.guild.getRoleById(role.roleId);
+                        if(r.getPosition()>Bot.guild.getBotRole().getPosition()){continue;}//check if the bot has the permission to edit this users roles
+                        Bot.guild.addRoleToMember(member,r).queue();
                     }
                 }
-            }else{
+            } else {
                 //remove all their status supporter roles
-                for(GuildRole role : Database.getGuildRoles()){
+                for (GuildRole role : Database.getGuildRoles()) {
                     waitUntilReqAvailable();
-                    Bot.guild.removeRoleFromMember(member, Bot.guild.getRoleById(role.roleId)).queue();
+                    Role r = Bot.guild.getRoleById(role.roleId);
+                    if(r.getPosition()>Bot.guild.getBotRole().getPosition()){continue;}//check if the bot has the permission to edit this users roles
+                    Bot.guild.removeRoleFromMember(member, r).queue();
                 }
                 //delete the User from the database
                 Database.removeUser(member.getIdLong());

@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -46,6 +47,7 @@ public class Bot {
         // Note: It is important to register your ReadyListener before building
         jda = JDABuilder.createDefault(token, GatewayIntent.GUILD_PRESENCES,GatewayIntent.GUILD_MEMBERS)
             .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOTE)
+            .setMemberCachePolicy(MemberCachePolicy.ALL)
             .addEventListeners(new CommandListener())
             .enableCache(CacheFlag.ACTIVITY)
             //.setHttpClientBuilder and setHttpClient
