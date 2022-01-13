@@ -41,11 +41,14 @@ public class StatusChecker {
 
             waitUntilReqAvailable();
             Member member = Bot.guild.getMemberById(user.userId);
-
+            if(member == null){//Member is not in the server anymore
+                Database.removeUser(user.userId);
+                continue;
+            }
             waitUntilReqAvailable();
             //if member is offline
             if (member.getOnlineStatus().name().equals("OFFLINE"))
-                break;
+                continue;
 
             waitUntilReqAvailable();
             List<Activity> membersActivity = Bot.guild.getMemberById(user.userId).getActivities();
