@@ -30,6 +30,12 @@ public class SetSupportStatus extends SlashCommand {
             return;
         }
         String status = Objects.requireNonNull(event.getOption("status")).getAsString();
+
+        //remove every double spaces from the status because you can't use double spaces in discord
+        while(status.contains("  ")){
+            status = status.replaceAll("  "," ");
+        }
+
         long guildId = Objects.requireNonNull(event.getGuild()).getIdLong();
         if(status.length()>128){
             event.replyEmbeds(Bot.getReplyEmbed("error",
