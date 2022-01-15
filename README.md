@@ -5,8 +5,7 @@
 
 Basically, this bot is rewarding members for haven a certain custom user status by giving them certain roles.
 
-This will help the server grow by making your members showing your server (or other stuff) to their friends.
-Right when theirs friends open discord or when they just chat.
+This will help the server grow by making your members show your server to their friends.
 
 ## directory
 1. [How it works as a server member](#how-it-works-as-a-server-member)
