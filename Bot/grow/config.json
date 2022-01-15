@@ -2,5 +2,5 @@
   "token":"",
   "embedColor":"25,255,25",
   "guildId": "",
-  "maxReqPerSecondStatusChecker": "10"
+  "maxReqPerSecondStatusChecker": "12"
 }

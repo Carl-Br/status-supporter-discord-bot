@@ -49,8 +49,6 @@ public class StatusChecker {
             //if member is offline
             if (member.getOnlineStatus().name().equals("OFFLINE"))
                 continue;
-
-            waitUntilReqAvailable();
             List<Activity> membersActivity = Bot.guild.getMemberById(user.userId).getActivities();
 
             String userStatus = "";
@@ -59,7 +57,7 @@ public class StatusChecker {
                     userStatus = a.getName();
                 }
             }
-
+            waitUntilReqAvailable();
             //check if they have one of the status their are supposed to have
 
             boolean memberHasCorrectStatus = false;
