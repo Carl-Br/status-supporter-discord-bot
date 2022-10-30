@@ -57,7 +57,7 @@ public class ApproveUserStatus extends SlashCommand {
 
         // get the supporter roles
         List<GuildRole> guildRoles = Database.getGuildRoles();
-        String latestServerStatus = Database.getLatestStatus().supporterStatus;//the status the member has to apply
+        String latestServerStatus = Database.getLatestStatus().supporterStatus;//the status the member has to set
 
         //check if userStatus starts with Server supporter status
         if(userStatus.equals(latestServerStatus)){
@@ -88,6 +88,6 @@ public class ApproveUserStatus extends SlashCommand {
         //else error message: you customizable user status: \"%s/" doesn't start with [server support status]
 
         event.replyEmbeds(Bot.getReplyEmbed("error",
-            "Your customizable user status is not equal to: "+latestServerStatus+".").build()).setEphemeral(true).queue();
+            "Your customizable user status is not equal to: **\"** "+latestServerStatus+" **\"**.").build()).setEphemeral(true).queue();
     }
 }
